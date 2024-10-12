@@ -1,38 +1,38 @@
+import { useQuery } from "@tanstack/react-query"
+import axios from 'axios'
 
-import { useState } from 'react'
-import useTodos from './hooks/useTodos'
-
-
+type Post = {
+  id:number,
+  title:string,
+  body:string,
+  userId:number
+}
 
 function App() {
-
-const pageSize = 15;
-const [page,setPage] = useState(1);
-
-
-
-  const [userId,setUserId] =useState<number>()
-  //const {data,error,isLoading} = useTodos(userId)
-  const {data,error,isLoading,fetchNextPage,isFetchingNextPage} = useTodos(pageSize)
-
-  if(error) return <><h2>{error.message}</h2></>
-  if(isLoading) return <><h2>Cargando...</h2></>
-
-  
-  const todos = data?.pages.flat()
+   const {data,isLoading}= useQuery({
+      queryKey:['posts'],
+      queryFn:()=>
+        axios.get<Post[]>('https://jsonplaceholder.typicode.com/posts?_limit=10')
+        .then((response)=>response.data)
+    
+  })
   return (
     <>
-        <h2>Todos</h2>
-
-        <ul>
-          {todos?.map((todo)=>(<li key={todo.id}>{todo.title}</li>))}
-        </ul>
-        
-        <button disabled={isFetchingNextPage} onClick={()=>fetchNextPage()}>
-          
-          {isFetchingNextPage ? 'Cargando...' : 'Cargar Más'}
-        </button>
-        
+      <h2>Posts</h2>
+      <form>
+        <div>
+          <input type="text" />
+        </div>
+        <div>
+          <button>Enviar</button>
+        </div>
+      </form>
+      {isLoading && 'Cargando...'}
+      <ul>
+        { data?.map( post =>
+                      <li key={post.id}>{post.title}</li>
+                    )}
+      </ul>
     </>
   )
 }
