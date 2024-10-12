@@ -1,4 +1,4 @@
-import { useQuery,keepPreviousData } from "@tanstack/react-query";
+import { useQuery,keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import axios from 'axios';
 
 type Todo = {
@@ -8,11 +8,8 @@ type Todo = {
     userId:number
 }
 
-type TodoQuery={
-    page:number,
-    pageSize:number
-}
-const queryTodos = (query:TodoQuery): Promise<Todo[]> => {
+
+const queryTodos = (pageParam :number,pageSize:number): Promise<Todo[]> => {
     //se define la url base del endpoint -FETCH STYLE
     //const url = 'https://jsonplaceholder.typicode.com/todos?'
     const url = 'https://jsonplaceholder.typicode.com/todos';
@@ -30,17 +27,24 @@ const queryTodos = (query:TodoQuery): Promise<Todo[]> => {
                                 }        
     )}*/
    return axios.get(url,{params:{
-                                    _start: (query.page-1)*query.pageSize,
-                                    _limit: query.pageSize,
+                                    _start: (pageParam) * pageSize,
+                                    _limit: pageSize,
                                 }}).then((response)=>response.data)
 }
 
-function useTodos(query: TodoQuery){
-    return useQuery({
+function useTodos(pageSize :number){
+    return useInfiniteQuery({
         //users/2/todos
-        queryKey: ["todos",query],
-        queryFn:()=> queryTodos(query),
-        placeholderData:keepPreviousData
+        queryKey: ["todos"],
+        queryFn:({pageParam})=> queryTodos(pageParam,pageSize),
+        initialPageParam:1,
+        getNextPageParam:(lastPage,allPages)=>{
+
+            return lastPage.length > 0 
+                    ? allPages.length + 1
+                    : undefined
+        }
+
         //refetchOnMount:false
       })
 
