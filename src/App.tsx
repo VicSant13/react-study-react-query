@@ -1,13 +1,19 @@
 
 import { useState } from 'react'
-import './App.css'
 import useTodos from './hooks/useTodos'
 
 
 
 function App() {
-  const [userId,setUserId] =useState<number>(1)
-  const {data,error,isLoading} = useTodos(userId)
+
+const pageSize = 15;
+const [page,setPage] = useState(pageSize);
+
+
+
+  const [userId,setUserId] =useState<number>()
+  //const {data,error,isLoading} = useTodos(userId)
+  const {data,error,isLoading} = useTodos({page,pageSize})
 
   if(error) return <><h2>{error.message}</h2></>
   if(isLoading) return <><h2>Cargando...</h2></>
@@ -19,7 +25,13 @@ function App() {
         <h2>Todos</h2>
         <select 
           value={userId}
-          onChange={(e)=>setUserId(Number(e.target.value))}
+          onChange={(e)=>{
+            if(e.target.value !== ''){
+              setUserId(Number(e.target.value))
+            }else{
+              setUserId(undefined)
+            }
+          }}
           >
           <option value="">Todos los usuarios</option>
           <option value="1">Usuario 1</option>
