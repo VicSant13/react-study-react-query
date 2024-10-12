@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery,keepPreviousData } from "@tanstack/react-query";
 import axios from 'axios';
 
 type Todo = {
@@ -12,7 +12,7 @@ type TodoQuery={
     page:number,
     pageSize:number
 }
-const queryTodos = (userId: number|undefined ): Promise<Todo[]> => {
+const queryTodos = (query:TodoQuery): Promise<Todo[]> => {
     //se define la url base del endpoint -FETCH STYLE
     //const url = 'https://jsonplaceholder.typicode.com/todos?'
     const url = 'https://jsonplaceholder.typicode.com/todos';
@@ -29,14 +29,18 @@ const queryTodos = (userId: number|undefined ): Promise<Todo[]> => {
                                         return response.json()
                                 }        
     )}*/
-   return axios.get(url,{params:{userId}}).then((response)=>response.data)
+   return axios.get(url,{params:{
+                                    _start: (query.page-1)*query.pageSize,
+                                    _limit: query.pageSize,
+                                }}).then((response)=>response.data)
 }
 
-function useTodos(userId:number|undefined){
+function useTodos(query: TodoQuery){
     return useQuery({
         //users/2/todos
-        queryKey: userId ? ['users',userId,'todos'] : ['todos'],
-        queryFn:()=> queryTodos(userId),
+        queryKey: ["todos",query],
+        queryFn:()=> queryTodos(query),
+        placeholderData:keepPreviousData
         //refetchOnMount:false
       })
 
