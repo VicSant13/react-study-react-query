@@ -3,6 +3,7 @@ import axios from 'axios'
 import { useRef } from "react"
 import { Post } from "./types"
 import useCreatePost from "./hooks/useCreatePost"
+import useDeletePost from "./hooks/useDeletePost"
 
 
 
@@ -11,6 +12,9 @@ function App() {
   const titleRef = useRef<HTMLInputElement>(null)
   const bodyRef = useRef<HTMLInputElement>(null)
 
+
+
+  const {mutate:deleteMutation} = useDeletePost()
   const {mutate,isPending,error} = useCreatePost(()=>{
                                                       if(titleRef.current?.value && bodyRef.current?.value){
                                                           titleRef.current.value = ''
@@ -54,7 +58,8 @@ function App() {
       {isLoading && 'Cargando...'}
       <ul>
         { data?.map( post =>
-                      <li key={post.id}>{post.title}</li>
+                      <li onClick={()=>deleteMutation(post)} key={post.id}>{post.title}</li>
+                     
                     )}
       </ul>
     </>
